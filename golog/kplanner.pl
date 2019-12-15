@@ -148,8 +148,8 @@ legalAct(A,RL,H) :- prim_action(A,RL), poss(A,C), kTrue(C,H).
 
 % the sensing value R for action A is impossible in history H
 impSense(A,R,H) :- causes(A,R,_,_,C), kTrue(neg(C),H).
-impSense(A,R,H) :- settles(A,R,F,V,C), kTrue(C,H), not mval(F,V,H). 
-impSense(A,R,H) :- rejects(A,R,F,_,_), not mval(F,_,[o(A,R)|H]). 
+impSense(A,R,H) :- settles(A,R,F,V,C), kTrue(C,H), \+ mval(F,V,H). 
+impSense(A,R,H) :- rejects(A,R,F,_,_), \+ mval(F,_,[o(A,R)|H]). 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  The plan generator
@@ -195,11 +195,11 @@ unwind(P, Q) :- P=loop(P1,P2), replNoExit(P1,P,P2,Q).
 %  after a 'case'.  No loss of generality for binary sensing.
 
 repl(_,_,_,Q) :- var(Q), !.
-repl(exit,X,Y,Q) :- not X=loop(exit,_), Q=Y.
+repl(exit,X,Y,Q) :- \+ X=loop(exit,_), Q=Y.
 repl(P,X,Y,Q) :- replNoExit(P,X,Y,Q).
 
 replNoExit(_,_,_,Q) :- var(Q), !.
-replNoExit(next,X,_,Q) :- not X=loop(next,_), (X=Q ; unwind(X,Q)).
+replNoExit(next,X,_,Q) :- \+ X=loop(next,_), (X=Q ; unwind(X,Q)).
 replNoExit(loop(P1,P),X,Y,loop(P1,Q)) :- replNoExit(P,X,Y,Q).
 replNoExit(seq(A,P),X,Y,seq(A,Q)) :- replNoExit(P,X,Y,Q).
 replNoExit(case(A,ILP),X,Y,case(A,ILQ)) :- replAll(ILP,X,Y,ILQ).
@@ -217,15 +217,15 @@ okState(N,H) :- goodState(N,C) -> mTrue(C,H) ; true.
 
 % A is a acceptable action in H: legal, not filtered, not trivial
 okAct(A,RL,H) :- legalAct(A,RL,H),
-  (goodAct(A,C1) -> mTrue(C1,H) ; true), not trivAct(A,H).
+  (goodAct(A,C1) -> mTrue(C1,H) ; true), \+ trivAct(A,H).
 
 % A is trivial if it is a sensing action that was just performed.
 trivAct(A,[o(A,_)|_]) :- prim_action(A,[_,_|_]).
 
 % A is useless if it has no effect and anything it senses is known
-uselessAct(A,H) :- not causes(A,_,_,_,_), 
-  not (settles(A,_,F,_,_), not kTrue(F=_,H)), 
-  not (rejects(A,_,F,_,_), not kTrue(F=_,H)).
+uselessAct(A,H) :- \+ causes(A,_,_,_,_), 
+  \+ (settles(A,_,F,_,_), \+ kTrue(F=_,H)), 
+  \+ (rejects(A,_,F,_,_), \+ kTrue(F=_,H)).
 
 % P is a non-trivial plan if all its loops have a 'next' operator
 nonTrivLoops(P) :- var(P), !.

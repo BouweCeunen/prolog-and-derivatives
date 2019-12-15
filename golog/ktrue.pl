@@ -71,7 +71,7 @@ causes(A,_,F,V,C) :- causes(A,F,V,C).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ktrue(C,H) condition C is known true in H
-kTrue(C,H) :- mTrue(C,H), !, not mTrue(neg(C),H).
+kTrue(C,H) :- mTrue(C,H), !, \+ mTrue(neg(C),H).
 
 % mtrue(C,H) condition C is possibly true in H according to what is known
 mTrue(true,_) :- !.
@@ -80,7 +80,7 @@ mTrue(or(P1,P2),H) :- !, (mTrue(P1,H) ; mTrue(P2,H)).
 mTrue(some(V,P,Q),H) :- subv(V,N,P,P1), subv(V,N,Q,Q1), !, 
     call(P1), mTrue(Q1,H).
 mTrue(all(V,P,Q),H) :- subv(V,N,P,P1), subv(V,N,Q,Q1), !, 
-    not (call(P1), mTrue(neg(Q1),H)).
+    \+ (call(P1), mTrue(neg(Q1),H)).
 
 mTrue(neg(true),_) :- !, fail.
 mTrue(neg(neg(P)),H) :- !, mTrue(P,H).
@@ -89,7 +89,7 @@ mTrue(neg(or(P1,P2)),H) :- !,  mTrue(and(neg(P1),neg(P2)),H).
 mTrue(neg(some(V,P,Q)),H) :- !, mTrue(all(V,P,neg(Q)),H).
 mTrue(neg(all(V,P,Q)),H) :- !, mTrue(some(V,P,neg(Q)),H).
 
-mTrue(neg(P),H) :- !, subf(P,P1,H), not call(P1).  /* fall to Prolog */
+mTrue(neg(P),H) :- !, subf(P,P1,H), \+ call(P1).  /* fall to Prolog */
 mTrue(P,H) :- subf(P,P1,H), call(P1).   /* last case: fall to Prolog */
 
 % T2 is T1 with X1 replaced by X2 
@@ -114,4 +114,4 @@ mval(F,V,[]) :- init(F,V).
 mval(F,V,[o(A,R)|H]) :- 
     causes(A,R,F,_,_) -> (causes(A,R,F,V,C), mTrue(C,H)) ;
      (settles(A,R,F,V1,C), kTrue(C,H)) ->  V=V1 ;
-       (mval(F,V,H), not (rejects(A,R,F,V,C), kTrue(C,H))).
+       (mval(F,V,H), \+ (rejects(A,R,F,V,C), kTrue(C,H))).

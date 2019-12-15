@@ -1,4 +1,3 @@
-
 %% The goal is to get the mineral by removing sand layers and/or ice layers
 
 :-include(kplanner).
@@ -35,10 +34,10 @@ causes(removeIceLayer,ilayers,iceLayer,true).
 
 
 settles(senseSandLayer,X,slayers,X,true).
+settles(senseIceLayer,X,ilayers,X,true).
+
 rejects(senseSandLayer,noSandLayer,layers,0,true).	% if noSandLayer, layers cannot be 0, still iceLayer
 rejects(senseSandLayer,sandLayer,layers,0,true).	% if sandLayer, layers cannot be 0, still sandLayer
-
-settles(senseIceLayer,X,ilayers,X,true).
 rejects(senseIceLayer,noIceLayer,layers,0,true).
 rejects(senseIceLayer,iceLayer,layers,0,true).
 
@@ -53,7 +52,6 @@ init(slayers,noSandLayer).						% the slayers may be noSandLayer  initially
 parm_fluent(layers).							% layers is the unique parameter
 init_parm(generate,layers,1).					% small bound for generating is 1
 init_parm(test,layers,10).						% large bound for testing is 10
-
 
 
 top :- kplan(finished=yes).
